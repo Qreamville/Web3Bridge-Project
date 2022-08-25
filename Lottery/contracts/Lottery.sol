@@ -10,7 +10,9 @@ contract Lottery {
     /* Open: means anyone can enter, Calculating: means noone can enter since the winner is getting picked */
     enum LotteryState {
         OPEN,
-        CALCULATING
+        CALCULATING,
+        ENDED,
+        COMPLETED
     }
 
     /* State Variables */
@@ -73,17 +75,29 @@ contract Lottery {
         require(players.length > 2, "Not enough players");
         winner = players[randomNumber() % players.length];
         players = new address payable[](0);
-        (bool success, ) = winner.call{value: address(this).balance}("");
+        (bool success, ) = winner.call{
+            value: (address(this).balance - (address(this).balance * 20) / 100)
+        }("");
 
         if (!success) {
             revert TransferError();
         }
+        lotteryState = LotteryState.ENDED;
+    }
+
+    function adminShare() external onlyAdmin _lotteryState(LotteryState.ENDED) {
+        (bool success, ) = admin.call{value: address(this).balance}("");
+
+        if (!success) {
+            revert TransferError();
+        }
+        lotteryState = LotteryState.COMPLETED;
     }
 
     function restartLottery()
         external
         onlyAdmin
-        _lotteryState(LotteryState.CALCULATING)
+        _lotteryState(LotteryState.COMPLETED)
     {
         lotteryState = LotteryState.CALCULATING;
         winner = payable(address(0));
