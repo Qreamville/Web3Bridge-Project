@@ -1,22 +1,27 @@
 import { ethers } from "hardhat";
+import { MerkleTree } from "merkletreejs";
+import keccak256 from "keccak256";
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-  const unlockTime = currentTimestampInSeconds + ONE_YEAR_IN_SECS;
+  let whitelistAddresses = [
+    "0xF0ccc8B440Bf013a37ef722530B1e4727a785CfA",
+    "0x57ea20135f58c954145054561e9532BE79EB1A0d",
+  ];
 
-  const lockedAmount = ethers.utils.parseEther("1");
+  const leafNodes = whitelistAddresses.map((address) => keccak256(address));
+  const merkleTree = new MerkleTree(leafNodes, keccak256, { sortPairs: true });
 
-  const Lock = await ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+  const rootHash = merkleTree.getHexRoot();
+  console.log(rootHash);
 
-  await lock.deployed();
-
-  console.log(`Lock with 1 ETH and unlock timestamp ${unlockTime} deployed to ${lock.address}`);
+  const MerkleTreeWhitelist = await ethers.getContractFactory(
+    "MerkleTreeWhitelist"
+  );
+  const merkleTreeWhitelist = await MerkleTreeWhitelist.deploy(rootHash);
+  await merkleTreeWhitelist.deployed();
+  console.log(`deployed to ${merkleTreeWhitelist.address}`);
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
