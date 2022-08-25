@@ -70,9 +70,9 @@ contract Lottery {
             );
     }
 
-    function pickWinner() external onlyAdmin {
-        lotteryState = LotteryState.CALCULATING;
+    function pickWinner() external onlyAdmin _lotteryState(LotteryState.OPEN){
         require(players.length > 2, "Not enough players");
+        lotteryState = LotteryState.CALCULATING;
         winner = players[randomNumber() % players.length];
         players = new address payable[](0);
         (bool success, ) = winner.call{
