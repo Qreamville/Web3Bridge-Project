@@ -27,4 +27,14 @@ contract TodoList {
     function getTask(uint _index) public view returns (string memory, bool) {
         return (tasks[_index].text, tasks[_index].isCompleted);
     }
+
+    function deleteTask(uint256 _index) external returns (uint) {
+        tasks[_index] = tasks[tasks.length - 1];
+        tasks.pop();
+        return tasks.length;
+    }
+
+    function getTotalTasks() external view returns (uint) {
+        return tasks.length;
+    }
 }
