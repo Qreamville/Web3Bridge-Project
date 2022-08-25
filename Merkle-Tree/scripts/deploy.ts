@@ -1,18 +1,25 @@
-import { ethers } from "hardhat";
+// import { ethers } from "hardhat";
+import { MerkleTree } from "merkletreejs";
+import keccak256 from "keccak256";
 
 async function main() {
-  const itemAmount = ethers.utils.parseEther("1");
+  let whitelistAddresses = [
+    "0xF0ccc8B440Bf013a37ef722530B1e4727a785CfA",
+    "0x57ea20135f58c954145054561e9532BE79EB1A0d",
+  ];
 
-  const Auction = await ethers.getContractFactory("Auction");
-  const auction = await Auction.deploy("Estate", itemAmount);
+  const leafNodes = whitelistAddresses.map((address) => keccak256(address));
+  const merkleTree = new MerkleTree(leafNodes, keccak256, { sortPairs: true });
 
-  await auction.deployed();
+  const rootHash = merkleTree.getRoot();
+  console.log(rootHash.toString());
 
-  console.log(`deployed to ${auction.address}`);
+  // const Auction = await ethers.getContractFactory("Auction");
+  // const auction = await Auction.deploy("Estate", itemAmount);
+  // await auction.deployed();
+  // console.log(`deployed to ${auction.address}`);
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
