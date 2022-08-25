@@ -92,6 +92,7 @@ contract Auction {
             revert TransferError();
         }
 
+        item.owner = autionWinner[highestBid;
         auctionState = AuctionState.CLOSED;
     }
 
