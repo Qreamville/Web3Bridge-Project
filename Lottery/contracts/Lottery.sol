@@ -30,6 +30,7 @@ contract Lottery {
         lotteryState = LotteryState.OPEN;
     }
 
+    /* Modifiers */
     modifier onlyAdmin() {
         if (msg.sender != admin) {
             revert notAnAdmin();
